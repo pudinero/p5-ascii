@@ -48,7 +48,7 @@ function gotDevices(deviceInfos) {
     if (deviceInfo.kind == "videoinput") {
       console.info(deviceInfo.label, deviceInfo);
       devices.push(deviceInfo);
-      cameraSelect.option(deviceInfo.label, deviceInfo.deviceId);
+      cameraSelect.option(deviceInfo.label || "Host camera", deviceInfo.deviceId);
     }
   }
   let supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
