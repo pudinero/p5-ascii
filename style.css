@@ -54,6 +54,7 @@ div#consentContainer {
     text-align: center;
   }
   > button {
+    font-family: "Cascadia Code", "Courier New", Courier, monospace;
     background-color: transparent;
     border: 2px solid #39ff14;
     border-radius: 10px;
