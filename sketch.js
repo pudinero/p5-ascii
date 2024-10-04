@@ -24,6 +24,7 @@ let constraints;
 function preload() {
   // sourceText = loadStrings("images/poem.txt");
   // sourceImg = loadImage("LRS-0809.jpg");
+
   cameraSelect = createSelect();
 
   containerDiv = createDiv();
@@ -52,20 +53,35 @@ function gotDevices(deviceInfos) {
   }
   let supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
   console.info("supportedConstraints", supportedConstraints);
-  cameraSelect.changed((option) => {
-    changeCamera(option.target.selectedIndex);
-  });
+  console.info("Devices", devices);
 
-  constraints = {
-    video: {
-      deviceId: {
-        exact: devices[cameraSelected].deviceId,
+  if (devices.length > 0 && devices[0].deviceId) {
+    cameraSelect.changed((option) => {
+      changeCamera(option.target.selectedIndex);
+    });
+
+    constraints = {
+      video: {
+        deviceId: {
+          exact: devices[cameraSelected].deviceId,
+        },
+        aspectRatio: aspectRatio,
+        volume: 0.0,
       },
-      aspectRatio: aspectRatio,
-    },
-  };
+    };
 
-  video = createCapture(constraints);
+    video = createCapture(constraints);
+  } else {
+    console.error("No cameras found");
+
+    noSourceDetected = createDiv();
+    noSourceDetected.html("No sources detected :(");
+    asciiDiv.child(noSourceDetected);
+    asciiDiv.style("-webkit-text-stroke-width", "0px");
+    asciiDiv.style("color", "white");
+
+    cameraSelect.style("display", "none");
+  }
 }
 
 function changeCamera(camera) {
@@ -78,18 +94,24 @@ function changeCamera(camera) {
         exact: devices[cameraSelected].deviceId,
       },
       aspectRatio: aspectRatio,
+      volume: 0.0,
     },
   };
 
   video.remove();
   video.stop();
   video = createCapture(constraints);
+
+  video.hide();
+  video.volume(0);
   setupCamera();
 }
 
 function setup() {
   noCanvas();
-  setupCamera();
+  if (video) {
+    setupCamera();
+  }
 }
 
 function setupCamera() {
@@ -121,26 +143,28 @@ function setupCamera() {
 }
 
 function draw() {
-  video.loadPixels();
-  let asciiImage = "";
-  for (let j = 0; j < video.height; j++) {
-    for (let i = 0; i < video.width; i++) {
-      const pixelIndex = (i + j * video.width) * 4;
-      const r = video.pixels[pixelIndex + 0];
-      const g = video.pixels[pixelIndex + 1];
-      const b = video.pixels[pixelIndex + 2];
-      const avg = (r + g + b) / 3;
-      const len = density.length;
-      const charIndex = floor(map(avg, 0, 255, 0, len));
-      const c = density.charAt(charIndex);
-      if (c == " ") asciiImage += "&nbsp;";
-      else asciiImage += c;
-      // ? Renderizar con colores rompe todo porque es mucho texto
-      // else asciiImage += "<span style=\"color: red\">" + c + "</span>";
+  if (video) {
+    video.loadPixels();
+    let asciiImage = "";
+    for (let j = 0; j < video.height; j++) {
+      for (let i = 0; i < video.width; i++) {
+        const pixelIndex = (i + j * video.width) * 4;
+        const r = video.pixels[pixelIndex + 0];
+        const g = video.pixels[pixelIndex + 1];
+        const b = video.pixels[pixelIndex + 2];
+        const avg = (r + g + b) / 3;
+        const len = density.length;
+        const charIndex = floor(map(avg, 0, 255, 0, len));
+        const c = density.charAt(charIndex);
+        if (c == " ") asciiImage += "&nbsp;";
+        else asciiImage += c;
+        // ? Renderizar con colores rompe todo porque es mucho texto
+        // else asciiImage += "<span style=\"color: red\">" + c + "</span>";
+      }
+      asciiImage += "<br/>";
     }
-    asciiImage += "<br/>";
+    asciiDiv.html(asciiImage);
   }
-  asciiDiv.html(asciiImage);
 }
 
 function valueToHex(c) {
