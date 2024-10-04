@@ -48,7 +48,10 @@ function gotDevices(deviceInfos) {
     if (deviceInfo.kind == "videoinput") {
       console.info(deviceInfo.label, deviceInfo);
       devices.push(deviceInfo);
-      cameraSelect.option(deviceInfo.label || "Host camera", deviceInfo.deviceId);
+      cameraSelect.option(
+        deviceInfo.label || "Host camera",
+        deviceInfo.deviceId
+      );
     }
   }
   let supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
@@ -66,11 +69,11 @@ function gotDevices(deviceInfos) {
           exact: devices[cameraSelected].deviceId,
         },
         aspectRatio: aspectRatio,
-        volume: 0.0,
       },
+      audio: false,
     };
 
-    video = createCapture(constraints);
+    video = createCapture(constraints, { flipped: true });
   } else {
     console.error("No cameras found");
 
@@ -94,13 +97,13 @@ function changeCamera(camera) {
         exact: devices[cameraSelected].deviceId,
       },
       aspectRatio: aspectRatio,
-      volume: 0.0,
     },
+    audio: false,
   };
 
   video.remove();
   video.stop();
-  video = createCapture(constraints);
+  video = createCapture(constraints, { flipped: true });
 
   video.hide();
   video.volume(0);
