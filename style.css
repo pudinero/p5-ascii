@@ -67,5 +67,7 @@ div#consentContainer{
 @media only screen and (max-width: 600px) {
   html, body {
     zoom: 75%;
+    font-size: 8pt;
+    line-height: 10pt;
   }
 }
