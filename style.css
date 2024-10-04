@@ -41,7 +41,7 @@ div#ascii {
   border-radius: 18px;
 }
 
-div#consentContainer{
+div#consentContainer {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -55,19 +55,27 @@ div#consentContainer{
   }
   > button {
     background-color: transparent;
-    border: 2px solid #39FF14;
+    border: 2px solid #39ff14;
     border-radius: 10px;
-    color: #39FF14;
+    color: #39ff14;
     padding: 10px 20px;
     font-size: 18px;
-    cursor: pointer
+    cursor: pointer;
   }
 }
 
 @media only screen and (max-width: 600px) {
-  html, body {
-    zoom: 75%;
-    font-size: 8pt;
+  div#consentContainer {
+    font-size: 12pt;
     line-height: 10pt;
+  }
+  div#ascii {
+    font-size: 3.5pt;
+    line-height: 8pt;
+    width: 93%;
+    height: 96%;
+    -webkit-text-stroke-width: unset;
+    -webkit-text-stroke-color: unset;
+    color: white;
   }
 }
