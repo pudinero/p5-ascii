@@ -25,21 +25,44 @@ function preload() {
   // sourceText = loadStrings("images/poem.txt");
   // sourceImg = loadImage("LRS-0809.jpg");
 
-  cameraSelect = createSelect();
+  cameraSelect = createSelect().hide();
+  containerDiv = createDiv().id("container");
+  asciiDiv = createDiv().id("ascii").parent(containerDiv);
+}
 
-  containerDiv = createDiv();
-  containerDiv.id("container");
+function getAvailableDevices() {
+  navigator.mediaDevices
+    .getUserMedia({ audio: false, video: true })
+    .then(function (stream) {
+      if (stream.getVideoTracks().length < 0) {
+        this.errorMessage.remove()
+        console.error("No devices available.", stream.getVideoTracks());
+        this.errorMessage = createDiv().parent(asciiDiv);
+        this.errorMessage.html("No devices available :(");
+        this.errorMessage.style("-webkit-text-stroke-width", "0px");
+        this.errorMessage.style("color", "white");
 
-  asciiDiv = createDiv();
-  asciiDiv.id("ascii");
+        cameraSelect.hide();
+      } else {
+        if (this.errorMessage) {
+          this.errorMessage.remove()
+        }
+        navigator.mediaDevices.enumerateDevices().then(gotDevices);
+      }
+    })
+    .catch(function (error) {
+      if (this.errorMessage) {
+        this.errorMessage.remove()
+      }
+      
+      console.error("Error accessing media devices.", error);
 
-  heartDiv = createDiv();
-  heartDiv.class("heart");
+      this.consentContainer = createDiv().id("consentContainer");
+      this.consentMessage = createP(`Error accessing media devices <br/><br/> ${error}`).parent(this.consentContainer);
+      asciiDiv.child(this.consentContainer);
 
-  containerDiv.child(asciiDiv);
-  containerDiv.child(heartDiv);
-
-  navigator.mediaDevices.enumerateDevices().then(gotDevices);
+      cameraSelect.hide();
+    });
 }
 
 function gotDevices(deviceInfos) {
@@ -59,6 +82,7 @@ function gotDevices(deviceInfos) {
   console.info("Devices", devices);
 
   if (devices.length > 0 && devices[0].deviceId) {
+    cameraSelect.show();
     cameraSelect.changed((option) => {
       changeCamera(option.target.selectedIndex);
     });
@@ -73,17 +97,16 @@ function gotDevices(deviceInfos) {
       audio: false,
     };
 
-    video = createCapture(constraints, { flipped: true });
+    setupCamera();
   } else {
     console.error("No cameras found");
 
-    noSourceDetected = createDiv();
-    noSourceDetected.html("No sources detected :(");
-    asciiDiv.child(noSourceDetected);
-    asciiDiv.style("-webkit-text-stroke-width", "0px");
-    asciiDiv.style("color", "white");
+    this.errorMessage = createDiv().parent(asciiDiv);
+    this.errorMessage.html("No cameras available :(");
+    this.errorMessage.style("-webkit-text-stroke-width", "0px");
+    this.errorMessage.style("color", "white");
 
-    cameraSelect.style("display", "none");
+    cameraSelect.hide();
   }
 }
 
@@ -112,12 +135,29 @@ function changeCamera(camera) {
 
 function setup() {
   noCanvas();
-  if (video) {
-    setupCamera();
-  }
+  navigator.permissions.query({ name: "camera" }).then((result) => {
+    if (result.state === "granted") {
+      getAvailableDevices();
+    } else if (result.state === "prompt") {
+      new ConsentScreen(() => {
+        console.log("Asking for camera access");
+        this.errorMessage = createDiv().parent(asciiDiv);
+        this.errorMessage.html("Asking for camera access");
+        this.errorMessage.style("-webkit-text-stroke-width", "0px");
+        this.errorMessage.style("color", "white");
+    
+        getAvailableDevices();
+      });
+    }
+    // Don't do anything if the permission was denied.
+  });
+  
 }
 
 function setupCamera() {
+  console.log(constraints);
+  video = createCapture(constraints, { flipped: true });
+
   console.info("Window dimensions", windowDimensions);
   console.info("Video dimensions", {
     width: video.width,
