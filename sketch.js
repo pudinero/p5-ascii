@@ -9,6 +9,7 @@ let video;
 let asciiDiv;
 let containerDiv;
 let cameraSelect;
+let cameraDropdown;
 let cameraSelected = 0;
 let aspectRatio = 16 / 9;
 let sourceText;
@@ -25,9 +26,10 @@ function preload() {
   // sourceText = loadStrings("images/poem.txt");
   // sourceImg = loadImage("LRS-0809.jpg");
 
-  cameraSelect = createSelect().hide();
-  containerDiv = createDiv().id("container");
-  asciiDiv = createDiv().id("ascii").parent(containerDiv);
+  cameraDropdownContainer = select("#camera-dropdown-container");
+  cameraDropdown = select("#camera-dropdown");
+  containerDiv = select("#container");
+  asciiDiv = select("#ascii").parent(containerDiv);
 }
 
 function getAvailableDevices() {
@@ -35,33 +37,35 @@ function getAvailableDevices() {
     .getUserMedia({ audio: false, video: true })
     .then(function (stream) {
       if (stream.getVideoTracks().length < 0) {
-        this.errorMessage.remove()
+        this.errorMessage.remove();
         console.error("No devices available.", stream.getVideoTracks());
         this.errorMessage = createDiv().parent(asciiDiv);
         this.errorMessage.html("No devices available :(");
         this.errorMessage.style("-webkit-text-stroke-width", "0px");
         this.errorMessage.style("color", "white");
 
-        cameraSelect.hide();
+        cameraDropdownContainer.hide();
       } else {
         if (this.errorMessage) {
-          this.errorMessage.remove()
+          this.errorMessage.remove();
         }
         navigator.mediaDevices.enumerateDevices().then(gotDevices);
       }
     })
     .catch(function (error) {
       if (this.errorMessage) {
-        this.errorMessage.remove()
+        this.errorMessage.remove();
       }
-      
+
       console.error("Error accessing media devices.", error);
 
       this.consentContainer = createDiv().id("consentContainer");
-      this.consentMessage = createP(`Error accessing media devices <br/><br/> ${error}`).parent(this.consentContainer);
+      this.consentMessage = createP(
+        `Error accessing media devices <br/><br/> ${error}`
+      ).parent(this.consentContainer);
       asciiDiv.child(this.consentContainer);
 
-      cameraSelect.hide();
+      cameraDropdownContainer.hide();
     });
 }
 
@@ -71,10 +75,16 @@ function gotDevices(deviceInfos) {
     if (deviceInfo.kind == "videoinput") {
       console.info(deviceInfo.label, deviceInfo);
       devices.push(deviceInfo);
-      cameraSelect.option(
-        deviceInfo.label || "Host camera",
-        deviceInfo.deviceId
-      );
+
+      const cameraOption = createDiv()
+        .addClass("block px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#161d2a]")
+        .html(deviceInfo.label || "Host camera")
+        .value(deviceInfo)
+        .mouseClicked((event) => {
+          changeCamera(event.target.value);
+        });
+      cameraOption.elt.setAttribute("x-on:click", "open = !open");
+      cameraDropdown.child(cameraOption);
     }
   }
   let supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
@@ -82,17 +92,16 @@ function gotDevices(deviceInfos) {
   console.info("Devices", devices);
 
   if (devices.length > 0 && devices[0].deviceId) {
-    cameraSelect.show();
-    cameraSelect.changed((option) => {
-      changeCamera(option.target.selectedIndex);
-    });
+    cameraDropdownContainer.show();
+    const cameraSelectedLabel = select("#selected-camera");
+    cameraSelectedLabel.html(devices[cameraSelected].label);
 
     constraints = {
       video: {
         deviceId: {
           exact: devices[cameraSelected].deviceId,
         },
-        aspectRatio: aspectRatio,
+        // aspectRatio: aspectRatio,
       },
       audio: false,
     };
@@ -112,14 +121,16 @@ function gotDevices(deviceInfos) {
 
 function changeCamera(camera) {
   cameraSelected = camera;
-  console.info(devices[cameraSelected].label, devices[cameraSelected]);
+  console.info(cameraSelected.label, cameraSelected);
+  const cameraSelectedLabel = select("#selected-camera");
+  cameraSelectedLabel.html(cameraSelected.label);
 
   constraints = {
     video: {
       deviceId: {
-        exact: devices[cameraSelected].deviceId,
+        exact: cameraSelected.deviceId,
       },
-      aspectRatio: aspectRatio,
+      // aspectRatio: aspectRatio,
     },
     audio: false,
   };
@@ -144,14 +155,14 @@ function setup() {
         this.errorMessage = createDiv().parent(asciiDiv);
         this.errorMessage.html("Asking for camera access");
         this.errorMessage.style("-webkit-text-stroke-width", "0px");
+        this.errorMessage.style("padding", "120px");
         this.errorMessage.style("color", "white");
-    
+
         getAvailableDevices();
       });
     }
-    // Don't do anything if the permission was denied.
+    // * Don't do anything if the permission was denied.
   });
-  
 }
 
 function setupCamera() {
