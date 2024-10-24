@@ -21,6 +21,7 @@ let windowDimensions = {
   height: window.innerHeight,
 };
 let constraints;
+let isMobile;
 
 function preload() {
   // sourceText = loadStrings("images/poem.txt");
@@ -30,6 +31,7 @@ function preload() {
   cameraDropdown = select("#camera-dropdown");
   containerDiv = select("#container");
   asciiDiv = select("#ascii").parent(containerDiv);
+  isMobile = deviceOrientation !== undefined;
 }
 
 function getAvailableDevices() {
@@ -137,7 +139,7 @@ function changeCamera(camera) {
 
   video.remove();
   video.stop();
-  video = createCapture(constraints, { flipped: true });
+  video = createCapture(constraints, { flipped: !isMobile });
 
   video.hide();
   video.volume(0);
@@ -166,8 +168,8 @@ function setup() {
 }
 
 function setupCamera() {
-  console.log(constraints);
-  video = createCapture(constraints, { flipped: true });
+  console.log(isMobile);
+  video = createCapture(constraints, { flipped: !isMobile });
 
   console.info("Window dimensions", windowDimensions);
   console.info("Video dimensions", {
