@@ -74,6 +74,7 @@ select#camera-select {
   div#consentContainer {
     font-size: 12pt;
     line-height: 10pt;
+    padding: unset;
   }
   div#ascii {
     font-size: 3.5pt;
