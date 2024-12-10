@@ -26,7 +26,7 @@ function preload() {
   cameraDropdown = select("#camera-dropdown");
 
   containerDiv = select("#container");
-  asciiDiv = select("#tv-screen")
+  asciiDiv = select("#tv-screen");
   isMobile = deviceOrientation !== undefined;
 }
 
@@ -57,7 +57,11 @@ function getAvailableDevices() {
       if (stream.getVideoTracks().length < 0) {
         this.errorMessage.remove();
         console.error("No devices available.", stream.getVideoTracks());
-        this.errorMessage = createDiv().parent(asciiDiv).addClass("flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty")
+        this.errorMessage = createDiv()
+          .parent(asciiDiv)
+          .addClass(
+            "flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty"
+          );
         this.errorMessage.html("No devices available :(");
         this.errorMessage.style("-webkit-text-stroke-width", "0px");
         this.errorMessage.style("color", "white");
@@ -77,7 +81,11 @@ function getAvailableDevices() {
 
       console.error("Error accessing media devices.", error);
 
-      this.consentContainer = createDiv().id("consentContainer").addClass("flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty")
+      this.consentContainer = createDiv()
+        .id("consentContainer")
+        .addClass(
+          "flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty"
+        );
       this.consentMessage = createP(
         `Error accessing media devices <br/><br/> ${error}`
       ).parent(this.consentContainer);
@@ -97,7 +105,7 @@ function changeCamera(camera) {
     video: {
       deviceId: {
         exact: cameraSelected.deviceId,
-      }
+      },
     },
     audio: false,
   };
@@ -143,7 +151,7 @@ function gotDevices(deviceInfos) {
       video: {
         deviceId: {
           exact: devices[cameraSelected].deviceId,
-        }
+        },
       },
       audio: false,
     };
@@ -152,7 +160,11 @@ function gotDevices(deviceInfos) {
   } else {
     console.error("No cameras found");
 
-    this.errorMessage = createDiv().parent(asciiDiv).addClass("flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty")
+    this.errorMessage = createDiv()
+      .parent(asciiDiv)
+      .addClass(
+        "flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty"
+      );
     this.errorMessage.html("No cameras available :(");
     this.errorMessage.style("-webkit-text-stroke-width", "0px");
     this.errorMessage.style("color", "white");
@@ -229,7 +241,11 @@ function setup() {
     } else if (result.state === "prompt") {
       new ConsentScreen(() => {
         console.log("Asking for camera access");
-        this.errorMessage = createDiv().parent(asciiDiv).addClass("flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty")
+        this.errorMessage = createDiv()
+          .parent(asciiDiv)
+          .addClass(
+            "flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty"
+          );
         this.errorMessage.html("Asking for camera access");
         this.errorMessage.style("-webkit-text-stroke-width", "0px");
         this.errorMessage.style("padding", "120px");
