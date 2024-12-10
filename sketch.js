@@ -179,7 +179,6 @@ function loadVideoPixels() {
 
   if (video) {
     video.loadPixels();
-    // video.size(128, 75);
     let w = width / video.width;
     let h = height / video.height;
     for (let j = 0; j < video.height; j++) {
@@ -200,20 +199,20 @@ function loadVideoPixels() {
         // graphics.noStroke();
 
         // ! Text with color
-        graphics.fill(r, g, b);
+        // graphics.fill(r, g, b);
 
         // * Text on grayscale
         // graphics.fill(avg);
 
         // * Draw individual characters
-        graphics.text(c, i * w + w / 2, j * h + h / 1.75);
+        // graphics.text(c, i * w + w / 2, j * h + h / 1.75);
 
         ////////// ? Draw bounding boxes //////////
         // ! Fill color
-        // graphics.fill(r, g, b);
+        graphics.fill(r, g, b);
 
         // * Fill white
-        graphics.fill(255, 255, 255, 0);
+        // graphics.fill(255, 255, 255, 0);
 
         // ! Fill grayscale
         // graphics.fill(avg);
