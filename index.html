@@ -2,35 +2,89 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Sketch</title>
+    <title>ASCII Cam</title>
 
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="style.css" />
 
     <script src="libraries/p5.min.js"></script>
     <script src="libraries/p5.sound.min.js"></script>
     <script src="consentScreen.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs" defer></script>
+    <script src="sketch.js"></script>
   </head>
 
-  <body>
-    <script src="sketch.js"></script>
-    <div id="container">
-      <div id="ascii"></div>
-      <div x-data="{ open: false }" id="camera-dropdown-container" style="display: none;">
-        <button x-on:click="open = !open" class="bg-white border border-gray-200 text-gray-700 py-2 px-4 rounded inline-flex justify-between items-center dark:bg-[#20293A] dark:border-slate-700 dark:text-gray-400 absolute ml-auto mr-auto left-0 right-0 w-fit bottom-[55px]">
-          <span id="selected-camera">Select a camera</span>
-          <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-        </button>
-      
-        <div x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute z-50 mb-2 w-full rounded-md shadow-lg bg-white border border-gray-200 dark:bg-[#20293A] dark:border-slate-700 ml-auto mr-auto left-0 right-0 max-w-fit bottom-[90px]">
-          <div id="camera-dropdown" class="py-1 text-gray-700 dark:text-gray-400 text-sm" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-            
+  <body class="bg-zinc-950">
+    <main>
+      <div
+        id="container"
+        class="flex flex-col flex-wrap items-center h-svh justify-center"
+      >
+        <div
+          id="tv"
+          class="aspect-[4/3] bg-zinc-800 w-full max-w-[75%] p-3 rounded-2xl"
+        >
+          <div
+            class="aspect-[4/3] relative w-full h-full bg-zinc-900 rounded-md overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.9)]"
+          >
+            <div
+              id="tv-screen"
+              class="rounded-md relative p-1 z-10 h-full w-full flex items-center justify-center"
+            >
+              <!-- <p class="text-lime-500 bg-zinc-950 font-mono animate-pulse absolute p-1">< NO SIGNAL ></p> -->
+            </div>
+          </div>
+        </div>
+
+        <div
+          x-data="{ open: false }"
+          id="camera-dropdown-container"
+          class="w-fit mt-5"
+          style="display: none"
+        >
+          <button
+            x-on:click="open = !open"
+            class="bg-white border border-gray-200 text-gray-700 py-2 px-4 rounded inline-flex justify-between items-center dark:bg-[#20293A] dark:border-slate-700 dark:text-gray-400 ml-auto mr-auto left-0 right-0 w-fit"
+          >
+            <span id="selected-camera">Select a camera</span>
+            <svg
+              class="ml-2 h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              ></path>
+            </svg>
+          </button>
+
+          <div
+            x-show="open"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="absolute z-50 mb-2 w-full rounded-md shadow-lg bg-white border border-gray-200 dark:bg-[#20293A] dark:border-slate-700 ml-auto mr-auto left-0 right-0 max-w-fit bottom-[90px]"
+          >
+            <div
+              id="camera-dropdown"
+              class="py-1 text-gray-700 dark:text-gray-400 text-sm"
+              role="menu"
+              aria-orientation="vertical"
+              aria-labelledby="options-menu"
+            ></div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </body>
 </html>

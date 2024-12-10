@@ -1,37 +1,53 @@
-// Image to ASCII
-
-// const density = "       ..::░░▒▒▓▓████";
-// const density = "████▓▓▒▒░░::..     ";
-// const density = "     ..::♥️♥️♣️♣️♠️♠️♦️♦️♦️♦️";
-const density = "     ..::|/Xx&6#@";
-
 let video;
-let asciiDiv;
-let containerDiv;
-let cameraSelect;
-let cameraDropdown;
-let cameraSelected = 0;
-let aspectRatio = 16 / 9;
-let sourceText;
-let sourceImg;
-let startIndex = 0;
+// const density = "   ..::░░▒▒▓▓████";
+const density = "     ..::|/Xx&6#@";
+// const density = `$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,"^\`'. `;
+// const density = "     ..::-=+*#%@";
+let font;
+const fontAspectRatio_W = 128;
+const fontAspectRatio_H = 75;
+let fisheyeShader;
+let canvas;
+let graphics;
 const devices = [];
-let windowDimensions = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-};
+let scale = 30;
+
 let constraints;
 let isMobile;
 
-function preload() {
-  // sourceText = loadStrings("images/poem.txt");
-  // sourceImg = loadImage("LRS-0809.jpg");
+let cameraSelect;
+let cameraDropdown;
+let cameraSelected = 0;
 
+function preload() {
+  fisheyeShader = loadShader("/shaders/fisheye.vert", "/shaders/fisheye.frag");
+  font = loadFont("/assets/CascadiaCode-Regular.otf");
   cameraDropdownContainer = select("#camera-dropdown-container");
   cameraDropdown = select("#camera-dropdown");
+
   containerDiv = select("#container");
-  asciiDiv = select("#ascii").parent(containerDiv);
+  asciiDiv = select("#tv-screen")
   isMobile = deviceOrientation !== undefined;
+}
+
+function setupCamera() {
+  console.log(isMobile);
+  video = createCapture(constraints, { flipped: !isMobile });
+
+  const total_pixels = fontAspectRatio_W * fontAspectRatio_H * (scale / 100);
+  const w_ratio = fontAspectRatio_H / fontAspectRatio_W;
+  const h_ratio = fontAspectRatio_W / fontAspectRatio_H;
+
+  console.info("Ratio", `${w_ratio}/${h_ratio}`);
+  console.info("Total pixels", total_pixels);
+
+  new_width = Math.sqrt(total_pixels / w_ratio);
+  new_height = Math.sqrt(total_pixels / h_ratio);
+
+  console.info("Final resolution", { width: new_width, height: new_height });
+
+  video.size(new_width, new_height);
+  video.hide();
 }
 
 function getAvailableDevices() {
@@ -41,7 +57,7 @@ function getAvailableDevices() {
       if (stream.getVideoTracks().length < 0) {
         this.errorMessage.remove();
         console.error("No devices available.", stream.getVideoTracks());
-        this.errorMessage = createDiv().parent(asciiDiv);
+        this.errorMessage = createDiv().parent(asciiDiv).addClass("flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty")
         this.errorMessage.html("No devices available :(");
         this.errorMessage.style("-webkit-text-stroke-width", "0px");
         this.errorMessage.style("color", "white");
@@ -61,7 +77,7 @@ function getAvailableDevices() {
 
       console.error("Error accessing media devices.", error);
 
-      this.consentContainer = createDiv().id("consentContainer");
+      this.consentContainer = createDiv().id("consentContainer").addClass("flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty")
       this.consentMessage = createP(
         `Error accessing media devices <br/><br/> ${error}`
       ).parent(this.consentContainer);
@@ -69,6 +85,30 @@ function getAvailableDevices() {
 
       cameraDropdownContainer.hide();
     });
+}
+
+function changeCamera(camera) {
+  cameraSelected = camera;
+  console.info(cameraSelected.label, cameraSelected);
+  const cameraSelectedLabel = select("#selected-camera");
+  cameraSelectedLabel.html(cameraSelected.label);
+
+  constraints = {
+    video: {
+      deviceId: {
+        exact: cameraSelected.deviceId,
+      }
+    },
+    audio: false,
+  };
+
+  video.remove();
+  video.stop();
+  video = createCapture(constraints, { flipped: !isMobile });
+
+  video.hide();
+  video.volume(0);
+  setupCamera();
 }
 
 function gotDevices(deviceInfos) {
@@ -79,13 +119,14 @@ function gotDevices(deviceInfos) {
       devices.push(deviceInfo);
 
       const cameraOption = createDiv()
-        .addClass("block px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#161d2a]")
+        .addClass("px-4 py-2 hover:bg-gray-100")
         .html(deviceInfo.label || "Host camera")
         .value(deviceInfo)
         .mouseClicked((event) => {
           changeCamera(event.target.value);
         });
-      cameraOption.elt.setAttribute("x-on:click", "open = !open");
+
+      cameraOption.elt.setAttribute("x-on:click", "open = false");
       cameraDropdown.child(cameraOption);
     }
   }
@@ -102,8 +143,7 @@ function gotDevices(deviceInfos) {
       video: {
         deviceId: {
           exact: devices[cameraSelected].deviceId,
-        },
-        // aspectRatio: aspectRatio,
+        }
       },
       audio: false,
     };
@@ -112,7 +152,7 @@ function gotDevices(deviceInfos) {
   } else {
     console.error("No cameras found");
 
-    this.errorMessage = createDiv().parent(asciiDiv);
+    this.errorMessage = createDiv().parent(asciiDiv).addClass("flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty")
     this.errorMessage.html("No cameras available :(");
     this.errorMessage.style("-webkit-text-stroke-width", "0px");
     this.errorMessage.style("color", "white");
@@ -121,40 +161,75 @@ function gotDevices(deviceInfos) {
   }
 }
 
-function changeCamera(camera) {
-  cameraSelected = camera;
-  console.info(cameraSelected.label, cameraSelected);
-  const cameraSelectedLabel = select("#selected-camera");
-  cameraSelectedLabel.html(cameraSelected.label);
+function loadVideoPixels() {
+  // Clear the graphics buffer
+  graphics.clear();
 
-  constraints = {
-    video: {
-      deviceId: {
-        exact: cameraSelected.deviceId,
-      },
-      // aspectRatio: aspectRatio,
-    },
-    audio: false,
-  };
+  if (video) {
+    video.loadPixels();
+    // video.size(128, 75);
+    let w = width / video.width;
+    let h = height / video.height;
+    for (let j = 0; j < video.height; j++) {
+      for (let i = 0; i < video.width; i++) {
+        const pixelIndex = (i + j * video.width) * 4;
+        const r = video.pixels[pixelIndex + 0];
+        const g = video.pixels[pixelIndex + 1];
+        const b = video.pixels[pixelIndex + 2];
+        const avg = (r + g + b) / 3;
+        const len = density.length;
+        const charIndex = floor(map(avg, 0, 255, 0, len));
+        const c = density.charAt(charIndex);
+        graphics.textSize(w);
+        graphics.textFont(font);
+        graphics.textAlign(CENTER, CENTER);
 
-  video.remove();
-  video.stop();
-  video = createCapture(constraints, { flipped: !isMobile });
+        //////////// ? Draw characters ////////////
+        // graphics.noStroke();
 
-  video.hide();
-  video.volume(0);
-  setupCamera();
+        // ! Text with color
+        graphics.fill(r, g, b);
+
+        // * Text on grayscale
+        // graphics.fill(avg);
+
+        // * Draw individual characters
+        graphics.text(c, i * w + w / 2, j * h + h / 1.75);
+
+        ////////// ? Draw bounding boxes //////////
+        // ! Fill color
+        // graphics.fill(r, g, b);
+
+        // * Fill white
+        graphics.fill(255, 255, 255, 0);
+
+        // ! Fill grayscale
+        // graphics.fill(avg);
+
+        // * Green stroke
+        // graphics.stroke(0, 255, 0)
+
+        // * Draw individual bounding box
+        graphics.square(i * w, j * h + h / 3.5, w);
+      }
+    }
+  }
 }
 
 function setup() {
-  noCanvas();
+  const dimensions = convertToAspectRatio(windowWidth);
+  canvas = createCanvas(dimensions.horizontal, dimensions.vertical - 7, WEBGL);
+  canvas.parent("tv-screen");
+  canvas.addClass("max-w-full max-h-full aspect-[4/3]");
+  graphics = createGraphics(dimensions.horizontal, dimensions.vertical);
+
   navigator.permissions.query({ name: "camera" }).then((result) => {
     if (result.state === "granted") {
       getAvailableDevices();
     } else if (result.state === "prompt") {
       new ConsentScreen(() => {
         console.log("Asking for camera access");
-        this.errorMessage = createDiv().parent(asciiDiv);
+        this.errorMessage = createDiv().parent(asciiDiv).addClass("flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty")
         this.errorMessage.html("Asking for camera access");
         this.errorMessage.style("-webkit-text-stroke-width", "0px");
         this.errorMessage.style("padding", "120px");
@@ -167,67 +242,32 @@ function setup() {
   });
 }
 
-function setupCamera() {
-  console.log(isMobile);
-  video = createCapture(constraints, { flipped: !isMobile });
-
-  console.info("Window dimensions", windowDimensions);
-  console.info("Video dimensions", {
-    width: video.width,
-    height: video.height,
-  });
-
-  const width = video.width; // 1920
-  const height = video.height; // 1080
-  const scale = 23;
-  const total_pixels = width * height * (scale / 100);
-  const w_ratio = height / width;
-  const h_ratio = width / height;
-
-  console.info("Ratio", `${w_ratio}/${h_ratio}`);
-  console.info("Total pixels", total_pixels);
-
-  const new_width = Math.sqrt(total_pixels / w_ratio);
-  const new_height = Math.sqrt(total_pixels / h_ratio);
-
-  console.info("Final resolution", { width: new_width, height: new_height });
-
-  video.size(new_width, new_height);
-
-  video.hide();
-  video.volume(0);
-}
-
 function draw() {
-  if (video) {
-    video.loadPixels();
-    let asciiImage = "";
-    for (let j = 0; j < video.height; j++) {
-      for (let i = 0; i < video.width; i++) {
-        const pixelIndex = (i + j * video.width) * 4;
-        const r = video.pixels[pixelIndex + 0];
-        const g = video.pixels[pixelIndex + 1];
-        const b = video.pixels[pixelIndex + 2];
-        const avg = (r + g + b) / 3;
-        const len = density.length;
-        const charIndex = floor(map(avg, 0, 255, 0, len));
-        const c = density.charAt(charIndex);
-        if (c == " ") asciiImage += "&nbsp;";
-        else asciiImage += c;
-        // ? Renderizar con colores rompe todo porque es mucho texto
-        // else asciiImage += "<span style=\"color: red\">" + c + "</span>";
-      }
-      asciiImage += "<br/>";
-    }
-    asciiDiv.html(asciiImage);
-  }
+  background(0, 0, 0, 0);
+  loadVideoPixels();
+
+  // Use the fish-eye shader
+  shader(fisheyeShader);
+
+  // Set the shader uniforms
+  fisheyeShader.setUniform("uTexture", graphics);
+  fisheyeShader.setUniform("uResolution", [graphics.width, graphics.height]);
+  fisheyeShader.setUniform("uDistortion", 1.05);
+
+  // Draw a rectangle that covers the entire canvas
+  rect(0, 0, width, height);
 }
 
-function valueToHex(c) {
-  var hex = c.toString(16);
-  return hex;
-}
+function convertToAspectRatio(horizontal, vertical) {
+  // Aspect ratio 4:3
+  const aspectRatio = 4 / 3;
 
-function rgbToHex(r, g, b) {
-  return valueToHex(r) + valueToHex(g) + valueToHex(b);
+  // Use the given horizontal value to calculate the new vertical value
+  const adjustedVertical = horizontal / aspectRatio;
+
+  // Return the new dimensions
+  return {
+    horizontal: horizontal,
+    vertical: adjustedVertical,
+  };
 }

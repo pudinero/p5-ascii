@@ -5,16 +5,16 @@ class ConsentScreen {
   }
 
   createConsentScreen() {
-    this.asciiDiv = select("#ascii");
-    this.consentContainer = createDiv().id("consentContainer");
+    this.tv_screen = select("#tv-screen");
+    this.consentContainer = createDiv().id("consentContainer").addClass("flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty")
     this.consentMessage = createP(
       "This application requires access to your camera. Please provide your consent to continue."
     ).parent(this.consentContainer);
-    this.asciiDiv.child(this.consentContainer);
+    this.tv_screen.child(this.consentContainer);
 
     this.consentButton = createButton("Ask for camera access").parent(
       this.consentContainer
-    );
+    ).addClass("bg-red-600 hover:bg-lime-300 text-zinc-50 hover:text-zinc-950 rounded max-sm:w-full w-3/4 py-2");
 
     this.consentButton.mousePressed(() => {
       navigator.permissions
@@ -29,13 +29,5 @@ class ConsentScreen {
           console.log("Got error :", error);
         });
     });
-
-    // Hover effect for the button
-    this.consentButton.mouseOver(() =>
-      this.consentButton.style("background-color", "#70FF7E30")
-    ); // Lighter green on hover
-    this.consentButton.mouseOut(() =>
-      this.consentButton.style("background-color", "transparent")
-    );
   }
 }
