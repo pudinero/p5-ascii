@@ -20,8 +20,8 @@ let cameraDropdown;
 let cameraSelected = 0;
 
 function preload() {
-  fisheyeShader = loadShader("/shaders/fisheye.vert", "/shaders/fisheye.frag");
-  font = loadFont("/assets/CascadiaCode-Regular.otf");
+  fisheyeShader = loadShader("./shaders/fisheye.vert", "./shaders/fisheye.frag");
+  font = loadFont("./assets/CascadiaCode-Regular.otf");
   cameraDropdownContainer = select("#camera-dropdown-container");
   cameraDropdown = select("#camera-dropdown");
 
