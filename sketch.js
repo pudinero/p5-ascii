@@ -227,6 +227,19 @@ function loadVideoPixels() {
   }
 }
 
+function loadVideo() {
+  // Clear the graphics buffer
+  graphics.clear();
+
+  if (video) {
+    video.loadPixels();
+    graphics.noStroke();
+    graphics.rectMode(CENTER);
+    video.size(640, 480)
+    graphics.image(video, 2, 8, width - 4.3, height - 9)
+  }
+}
+
 function setup() {
   const dimensions = convertToAspectRatio(windowWidth);
   canvas = createCanvas(dimensions.horizontal, dimensions.vertical - 7, WEBGL);
@@ -260,6 +273,7 @@ function setup() {
 function draw() {
   background(0, 0, 0, 0);
   loadVideoPixels();
+  // loadVideo()
 
   // Use the fish-eye shader
   shader(fisheyeShader);

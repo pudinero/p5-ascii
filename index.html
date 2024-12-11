@@ -30,13 +30,23 @@
           class="aspect-[4/3] bg-zinc-800 w-full max-w-[75%] h-[min-intrinsic] p-3 rounded-2xl"
         >
           <div
-            class="aspect-[4/3] relative w-full max-h-full bg-zinc-900 rounded-md overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.9)]"
+            class="aspect-[4/3] z-10 relative w-full max-h-full bg-zinc-900 rounded-md overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.9)]"
           >
             <div
+              class="absolute z-10 inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.3)_100%)]"
+            ></div>
+            <div
+              class="absolute z-10 inset-0 bg-[linear-gradient(180deg,_rgba(255,255,255,0.1)_0%,_rgba(255,255,255,0)_50%,_rgba(0,0,0,0.1)_100%)]"
+            ></div>
+            <div
               id="tv-screen"
-              class="rounded-md relative p-1 z-10 h-full w-full flex items-center justify-center"
+              class="rounded-md relative p-1 h-full w-full flex items-center justify-center"
             >
-              <!-- <p class="text-lime-500 bg-zinc-950 font-mono animate-pulse absolute p-1">< NO SIGNAL ></p> -->
+              <!-- <p
+                class="text-lime-500 bg-zinc-950 font-mono animate-pulse absolute p-1"
+              >
+                < NO SIGNAL >
+              </p> -->
             </div>
           </div>
         </div>
