@@ -6,7 +6,7 @@ class ConsentScreen {
 
   createConsentScreen() {
     this.tv_screen = select("#tv-screen");
-    this.consentContainer = createDiv().id("consentContainer").addClass("flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 md:flex-row p-12 text-pretty")
+    this.consentContainer = createDiv().id("consentContainer").addClass("z-10 flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 md:flex-row p-12 text-pretty")
     this.consentMessage = createP(
       "This application requires access to your camera. Please provide your consent to continue."
     ).parent(this.consentContainer);

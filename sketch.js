@@ -84,7 +84,7 @@ function getAvailableDevices() {
       this.consentContainer = createDiv()
         .id("consentContainer")
         .addClass(
-          "flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty"
+          "z-10 flex flex-col justify-center items-center gap-6 text-lime-500 bg-zinc-950/30 h-full w-full font-mono absolute max-md:p-5 p-12 text-pretty"
         );
       this.consentMessage = createP(
         `Error accessing media devices <br/><br/> ${error}`
