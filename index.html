@@ -1,102 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>ASCII Cam</title>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="stylesheet" type="text/css" href="style.css" />
+  <title>ASCII Cam</title>
 
-    <script src="libraries/p5.min.js"></script>
-    <script src="libraries/p5.sound.min.js"></script>
-    <script src="consentScreen.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="//unpkg.com/alpinejs" defer></script>
-    <script src="sketch.js"></script>
-  </head>
+  <link rel="stylesheet" type="text/css" href="style.css" />
 
-  <body
-    class="bg-zinc-100 absolute inset-0 h-full z-10 w-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]"
-    x-data="{ open: false }"
-  >
-    <main class="grid gap-3 justify-items-center h-svh items-center">
-      <div
-        id="container"
-        class="section rounded-2xl w-full xl:w-[1280px] flex flex-col items-center"
-      >
-        <div
-          id="tv"
-          class="aspect-[4/3] bg-zinc-800 w-full max-w-[75%] h-[min-intrinsic] p-3 rounded-2xl"
-        >
+  <script src="libraries/p5.min.js"></script>
+  <script src="libraries/p5.sound.min.js"></script>
+  <script src="consentScreen.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="//unpkg.com/alpinejs" defer></script>
+  <script src="sketch.js"></script>
+  <script>
+    function player() {
+      return {
+        open: false,
+        showControls: true,
+        controlTimer: null,
+        isFullscreen: false,
+        aspectRatio: "4:3",
+        useAscii: false,
+        init() {
+          this.resetTimer();
+          document.addEventListener("fullscreenchange", () => {
+            this.isFullscreen = !!document.fullscreenElement;
+          });
+        },
+        resetTimer() {
+          this.showControls = true;
+          clearTimeout(this.controlTimer);
+          this.controlTimer = setTimeout(() => {
+            if (!this.open) {
+              this.showControls = false;
+            }
+          }, 3000);
+        },
+        toggleAscii() {
+          this.useAscii = !this.useAscii;
+          if (window.toggleAsciiMode) window.toggleAsciiMode();
+        },
+        toggleAspectRatio() {
+          if (this.aspectRatio === "4:3") {
+            this.aspectRatio = "16:9";
+            if (window.setAspectRatio) window.setAspectRatio(16 / 9);
+            document.getElementById("tv-screen").classList.remove("aspect-[4/3]");
+            document.getElementById("tv-screen").classList.add("aspect-[16/9]");
+            document.getElementById("tv-frame").classList.remove("aspect-[4/3]");
+            document.getElementById("tv-frame").classList.add("aspect-[16/9]");
+            document.getElementById("tv").classList.remove("aspect-[4/3]");
+            document.getElementById("tv").classList.add("aspect-[16/9]");
+          } else {
+            this.aspectRatio = "4:3";
+            if (window.setAspectRatio) window.setAspectRatio(4 / 3);
+            document.getElementById("tv-screen").classList.remove("aspect-[16/9]");
+            document.getElementById("tv-screen").classList.add("aspect-[4/3]");
+            document.getElementById("tv-frame").classList.remove("aspect-[16/9]");
+            document.getElementById("tv-frame").classList.add("aspect-[4/3]");
+            document.getElementById("tv").classList.remove("aspect-[16/9]");
+            document.getElementById("tv").classList.add("aspect-[4/3]");
+          }
+        },
+        toggleFullscreen() {
+          const el = document.getElementById("tv-screen");
+          if (!document.fullscreenElement) {
+            el.requestFullscreen().catch((err) => {
+              console.error(
+                `Error attempting to enable fullscreen: ${err.message}`
+              );
+            });
+          } else {
+            document.exitFullscreen();
+          }
+        },
+      };
+    }
+  </script>
+</head>
+
+<body
+  class="bg-zinc-100 absolute inset-0 h-full z-10 w-full bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
+  <main class="grid gap-3 justify-items-center h-svh items-center">
+    <div id="container" class="section rounded-2xl w-full xl:w-[1280px] flex flex-col items-center p-2">
+      <div id="tv"
+        class="aspect-[4/3] bg-zinc-800 w-full md:max-w-[75%] h-[min-intrinsic] p-3 rounded-2xl transition-all duration-300">
+        <div id="tv-frame"
+          class="aspect-[4/3] z-10 relative w-full max-h-full bg-zinc-900 rounded-md overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.9)]">
           <div
-            class="aspect-[4/3] z-10 relative w-full max-h-full bg-zinc-900 rounded-md overflow-hidden shadow-[inset_0_0_100px_rgba(0,0,0,0.9)]"
-          >
+            class="absolute z-10 inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.3)_100%)] pointer-events-none">
+          </div>
+          <div
+            class="absolute z-10 inset-0 bg-[linear-gradient(180deg,_rgba(255,255,255,0.1)_0%,_rgba(255,255,255,0)_50%,_rgba(0,0,0,0.1)_100%)] pointer-events-none">
+          </div>
+
+          <div id="tv-screen"
+            class="rounded-md relative h-full w-full flex items-center justify-center group transition-all duration-300 aspect-[4/3]"
+            :class="{ 'p-0 bg-black': isFullscreen, 'p-1': !isFullscreen }" x-data="player()" x-init="init()"
+            @mousemove="resetTimer()" @click="resetTimer()">
+            <!-- Controls Overlay -->
             <div
-              class="absolute z-10 inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.3)_100%)]"
-            ></div>
-            <div
-              class="absolute z-10 inset-0 bg-[linear-gradient(180deg,_rgba(255,255,255,0.1)_0%,_rgba(255,255,255,0)_50%,_rgba(0,0,0,0.1)_100%)]"
-            ></div>
-            <div
-              id="tv-screen"
-              class="rounded-md relative p-1 h-full w-full flex items-center justify-center"
-            >
-              <!-- <p
-                class="text-lime-500 bg-zinc-950 font-mono animate-pulse absolute p-1"
-              >
-                < NO SIGNAL >
-              </p> -->
+              class="absolute bottom-0 left-0 right-0 z-50 p-4 flex flex-wrap gap-4 justify-between items-end bg-gradient-to-t from-black/80 to-transparent transition-opacity duration-300"
+              x-show="showControls" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+              x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+              x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+              <!-- Camera Dropdown -->
+              <div id="camera-dropdown-container" class="w-fit relative" style="display: none">
+                <button @click="open = !open"
+                  class="bg-white border border-gray-200 text-gray-700 py-2 px-4 rounded inline-flex justify-between items-center min-w-[200px]">
+                  <span id="selected-camera" class="truncate">Select a camera</span>
+                  <svg class="ml-2 h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+
+                <div x-show="open" @click.outside="open = false"
+                  class="absolute bottom-full mb-2 w-full rounded-md shadow-lg bg-white border border-gray-200"
+                  style="display: none">
+                  <div id="camera-dropdown" class="py-1 text-gray-700 text-sm max-h-48 overflow-y-auto"></div>
+                </div>
+              </div>
+
+              <!-- Right Actions -->
+              <div class="flex gap-2 items-center">
+                <!-- ASCII Toggle -->
+                <button @click="toggleAscii()"
+                  class="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 p-2 rounded shadow-sm w-[40px] flex justify-center"
+                  title="Toggle ASCII Mode">
+                  <svg x-show="useAscii" class="w-5 h-5" fill="fill-gray-700" stroke="none" viewBox="0 0 24 24">
+                    <path
+                      d="M4 4C4 3.44772 4.44772 3 5 3H19C19.5523 3 20 3.44772 20 4V6C20 6.55228 19.5523 7 19 7C18.4477 7 18 6.55228 18 6V5H13V19H15C15.5523 19 16 19.4477 16 20C16 20.5523 15.5523 21 15 21H9C8.44772 21 8 20.5523 8 20C8 19.4477 8.44772 19 9 19H11V5H6V6C6 6.55228 5.55228 7 5 7C4.44772 7 4 6.55228 4 6V4Z" />
+                  </svg>
+                  <svg x-show="!useAscii" class="w-5 h-5" fill="fill-gray-700" stroke="none" viewBox="0 0 24 24">
+                    <circle cx="18" cy="7" r="1" stroke="#33363F" stroke-width="2" stroke-linecap="round" />
+                    <path
+                      d="M5.18601 18H14.814C15.7609 18 16.3348 16.9546 15.8264 16.1557L11.0124 8.5909C10.5408 7.84991 9.45915 7.84991 8.98761 8.59091L4.17361 16.1557C3.66524 16.9546 4.2391 18 5.18601 18Z"
+                      fill="#33363F" />
+                    <path
+                      d="M12.2422 18H19.7578C20.7162 18 21.2879 16.9318 20.7562 16.1344L16.9985 10.4977C16.5235 9.78521 15.4765 9.78521 15.0015 10.4977L11.2438 16.1344C10.7121 16.9318 11.2838 18 12.2422 18Z"
+                      fill="#33363F" />
+                  </svg>
+                </button>
+
+                <!-- Aspect Ratio Toggle -->
+                <button @click="toggleAspectRatio()"
+                  class="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 p-2 rounded shadow-sm"
+                  title="Toggle Aspect Ratio">
+                  <svg class="w-5 h-5" fill="fill-gray-700" stroke="none" viewBox="0 0 24 24">
+                    <path d="M2 4h20v16H2V4zm2 14h16V6H4v12zM8 8h2v2H8v2H6V8h2zm8 8h-2v-2h2v-2h2v4h-2z" />
+                  </svg>
+                </button>
+
+                <!-- Fullscreen Toggle -->
+                <button @click="toggleFullscreen()"
+                  class="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 p-2 rounded shadow-sm"
+                  title="Toggle Fullscreen">
+                  <!-- Maximize Icon -->
+                  <svg x-show="!isFullscreen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" />
+                  </svg>
+                  <!-- Minimize Icon -->
+                  <svg x-show="isFullscreen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-
-        <div
-          id="camera-dropdown-container"
-          class="w-fit mt-5"
-          style="display: none"
-        >
-          <button
-            x-on:click="open = !open"
-            class="bg-white border border-gray-200 text-gray-700 py-2 px-4 rounded inline-flex justify-between items-center ml-auto mr-auto left-0 right-0 w-full"
-          >
-            <span id="selected-camera">Select a camera</span>
-            <svg
-              class="ml-2 h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 9l-7 7-7-7"
-              ></path>
-            </svg>
-          </button>
-
-          <div
-            x-show="open"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="absolute z-50 mb-2 w-full rounded-md shadow-lg bg-white border border-gray-200 ml-auto mr-auto left-0 right-0 max-w-fit bottom-[90px]"
-          >
-            <div
-              id="camera-dropdown"
-              class="py-1 text-gray-700 dark:text-gray-400 text-sm"
-              role="menu"
-              aria-orientation="vertical"
-              aria-labelledby="options-menu"
-            ></div>
-          </div>
-        </div>
       </div>
-    </main>
-  </body>
+    </div>
+  </main>
+</body>
+
 </html>

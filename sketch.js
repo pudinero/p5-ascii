@@ -9,6 +9,7 @@ const fontAspectRatio_H = 75;
 let fisheyeShader;
 let canvas;
 let graphics;
+let fontGraphics;
 const devices = [];
 let scale = 30;
 
@@ -18,6 +19,7 @@ let isMobile;
 let cameraSelect;
 let cameraDropdown;
 let cameraSelected = 0;
+let useAscii = false;
 
 function preload() {
   fisheyeShader = loadShader("./shaders/fisheye.vert", "./shaders/fisheye.frag");
@@ -31,20 +33,20 @@ function preload() {
 }
 
 function setupCamera() {
-  console.log(isMobile);
+  console.log('isMobile', isMobile);
   video = createCapture(constraints, { flipped: !isMobile });
 
   const total_pixels = fontAspectRatio_W * fontAspectRatio_H * (scale / 100);
   const w_ratio = fontAspectRatio_H / fontAspectRatio_W;
   const h_ratio = fontAspectRatio_W / fontAspectRatio_H;
 
-  console.info("Ratio", `${w_ratio}/${h_ratio}`);
-  console.info("Total pixels", total_pixels);
+  // console.info("Ratio", `${w_ratio}/${h_ratio}`);
+  // console.info("Total pixels", total_pixels);
 
   new_width = Math.sqrt(total_pixels / w_ratio);
   new_height = Math.sqrt(total_pixels / h_ratio);
 
-  console.info("Final resolution", { width: new_width, height: new_height });
+  // console.info("Final resolution", { width: new_width, height: new_height });
 
   video.size(new_width, new_height);
   video.hide();
@@ -123,7 +125,7 @@ function gotDevices(deviceInfos) {
   for (let i = 0; i !== deviceInfos.length; ++i) {
     const deviceInfo = deviceInfos[i];
     if (deviceInfo.kind == "videoinput") {
-      console.info(deviceInfo.label, deviceInfo);
+      // console.info(deviceInfo.label, deviceInfo);
       devices.push(deviceInfo);
 
       const cameraOption = createDiv()
@@ -139,8 +141,8 @@ function gotDevices(deviceInfos) {
     }
   }
   let supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
-  console.info("supportedConstraints", supportedConstraints);
-  console.info("Devices", devices);
+  // console.info("supportedConstraints", supportedConstraints);
+  // console.info("Devices", devices);
 
   if (devices.length > 0 && devices[0].deviceId) {
     cameraDropdownContainer.show();
@@ -196,7 +198,7 @@ function loadVideoPixels() {
         graphics.textAlign(CENTER, CENTER);
 
         //////////// ? Draw characters ////////////
-        // graphics.noStroke();
+        graphics.noStroke();
 
         // ! Text with color
         // graphics.fill(r, g, b);
@@ -208,8 +210,6 @@ function loadVideoPixels() {
         // graphics.text(c, i * w + w / 2, j * h + h / 1.75);
 
         ////////// ? Draw bounding boxes //////////
-        // ! Fill color
-        graphics.fill(r, g, b);
 
         // * Fill white
         // graphics.fill(255, 255, 255, 0);
@@ -220,8 +220,16 @@ function loadVideoPixels() {
         // * Green stroke
         // graphics.stroke(0, 255, 0)
 
-        // * Draw individual bounding box
-        graphics.square(i * w, j * h + h / 3.5, w);
+        if (useAscii) {
+          // graphics.pixelDensity(1);
+          graphics.fill(r, g, b);
+          graphics.text(c, i * w + w / 2, j * h + h / 1.75);
+          // graphics.text(c, i * w, j * h + h / 3.5, w);
+        } else {
+          graphics.fill(r, g, b);
+          // * Draw individual bounding box
+          graphics.square(i * w, j * h + h / 3.5, w);
+        }
       }
     }
   }
@@ -246,6 +254,7 @@ function setup() {
   canvas.parent("tv-screen");
   canvas.addClass("max-w-full max-h-full aspect-[4/3]");
   graphics = createGraphics(dimensions.horizontal, dimensions.vertical);
+  fontGraphics = createGraphics(dimensions.horizontal, dimensions.vertical);
 
   navigator.permissions.query({ name: "camera" }).then((result) => {
     if (result.state === "granted") {
@@ -281,18 +290,41 @@ function draw() {
   // Set the shader uniforms
   fisheyeShader.setUniform("uTexture", graphics);
   fisheyeShader.setUniform("uResolution", [graphics.width, graphics.height]);
-  fisheyeShader.setUniform("uDistortion", 1.05);
+  fisheyeShader.setUniform("uDistortion", 1.0);
 
   // Draw a rectangle that covers the entire canvas
   rect(0, 0, width, height);
 }
 
-function convertToAspectRatio(horizontal, vertical) {
-  // Aspect ratio 4:3
-  const aspectRatio = 4 / 3;
+let currentAspectRatio = 4 / 3;
 
+function windowResized() {
+  const dimensions = convertToAspectRatio(windowWidth);
+  resizeCanvas(dimensions.horizontal, dimensions.vertical - 7);
+  graphics = createGraphics(dimensions.horizontal, dimensions.vertical);
+}
+
+function setAspectRatio(ratio) {
+  currentAspectRatio = ratio;
+  
+  if (Math.abs(ratio - 16/9) < 0.01) {
+    canvas.removeClass("aspect-[4/3]");
+    canvas.addClass("aspect-[16/9]");
+  } else {
+    canvas.removeClass("aspect-[16/9]");
+    canvas.addClass("aspect-[4/3]");
+  }
+  
+  windowResized();
+}
+
+function toggleAsciiMode() {
+  useAscii = !useAscii;
+}
+
+function convertToAspectRatio(horizontal, vertical) {
   // Use the given horizontal value to calculate the new vertical value
-  const adjustedVertical = horizontal / aspectRatio;
+  const adjustedVertical = horizontal / currentAspectRatio;
 
   // Return the new dimensions
   return {
