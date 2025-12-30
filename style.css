@@ -8,21 +8,6 @@ body {
   color: white;
 }
 
-/* canvas {
-  display: block;
-} */
-
-/* div#container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  background-color: rgb(24, 24, 24);
-  height: 100dvh;
-  width: 100dvw;
-  /* padding: 20px;
-} */
-
 select#camera-select {
   background: black;
 }
